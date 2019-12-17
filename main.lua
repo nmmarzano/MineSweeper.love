@@ -1,5 +1,5 @@
-local board_width = 640
-local board_size = 16
+local board_width = 640 -- in pixels
+local board_size = 16 -- in cells
 
 local cell_size = board_width/board_size
 local cell_padding = 2
