@@ -18,6 +18,34 @@ local lost = false
 
 local font
 
+local palette = {}
+local palettes = {
+	normal_palette = {
+		unrevealed = {0.11, 0.11, 0.11},
+		revealed = {0.2, 0.2, 0.2},
+		hint = {1, 1, 1, 0.87},
+		mine = {0.69, 0, 0.13},
+		flag = {0.38, 0, 0.93},
+		background = {0.07, 0.07, 0.07}
+	},
+	win_palette = {
+		unrevealed = {0.11, 0.19, 0.11},
+		revealed = {0.2, 0.33, 0.2},
+		hint = {1, 1, 1, 0.87},
+		mine = {0.69, 0, 0.13},
+		flag = {0.38, 0.22, 0.93},
+		background = {0.07, 0.07, 0.07}
+	},
+	lose_palette = {
+		unrevealed = {0.16, 0.11, 0.11},
+		revealed = {0.3, 0.2, 0.2},
+		hint = {1, 1, 1, 0.87},
+		mine = {0.69, 0, 0.13},
+		flag = {0.69, 0, 0.93},
+		background = {0.07, 0.07, 0.07}
+	}
+}
+
 
 function updateHints(i, j)
 	if i+1 <= board_size then
@@ -58,6 +86,15 @@ function updateTitle()
 end
 
 
+function updatePalette()
+	if lost then 
+		palette = palettes.lose_palette
+	elseif won() then
+		palette = palettes.win_palette
+	end
+end
+
+
 function init()
 
 	total_revealed = 0
@@ -91,6 +128,8 @@ function init()
 		end
 	end
 
+	palette = palettes.normal_palette
+
 	updateTitle()
 end
 
@@ -111,14 +150,12 @@ end
 
 
 function love.draw()
+	-- background
+	love.graphics.setColor(palette.background)
+	love.graphics.rectangle('fill', 0, 0, board_width, board_width)
+
 	-- unrevealed cells
-	if lost then
-		love.graphics.setColor(0.25, 0.1, 0.1)
-	elseif won() then
-		love.graphics.setColor(0.1, 0.25, 0.1)
-	else
-		love.graphics.setColor(0.25, 0.25, 0.25)
-	end
+	love.graphics.setColor(palette.unrevealed)
 	for i = 0, (board_size-1) do
 		for j = 0, (board_size-1) do
 			if not revealed[i+1][j+1] then
@@ -127,14 +164,8 @@ function love.draw()
 		end
 	end
 
-	-- revealed cell backgrounds
-	if lost then
-		love.graphics.setColor(0.5, 0.2, 0.2)
-	elseif won() then
-		love.graphics.setColor(0.2, 0.5, 0.2)
-	else
-		love.graphics.setColor(0.5, 0.5, 0.5)
-	end
+	-- revealed cells
+	love.graphics.setColor(palette.revealed)
 	for i = 0, (board_size-1) do
 		for j = 0, (board_size-1) do
 			if revealed[i+1][j+1] then
@@ -144,7 +175,7 @@ function love.draw()
 	end
 
 	-- print hints
-	love.graphics.setColor(0.2, 0.8, 0.2)
+	love.graphics.setColor(palette.hint)
 	for i = 0, (board_size-1) do
 		for j = 0, (board_size-1) do
 			if revealed[i+1][j+1] and board[i+1][j+1]==false and hints[i+1][j+1]~=0 then
@@ -154,7 +185,7 @@ function love.draw()
 	end
 
 	-- print revealed mines
-	love.graphics.setColor(0.8, 0.2, 0.2)
+	love.graphics.setColor(palette.mine)
 	for i = 0, (board_size-1) do
 		for j = 0, (board_size-1) do
 			if revealed[i+1][j+1] and board[i+1][j+1] then
@@ -164,7 +195,7 @@ function love.draw()
 	end
 
 	-- print flags
-	love.graphics.setColor(0.6, 0.6, 0.2)
+	love.graphics.setColor(palette.flag)
 	for i = 0, (board_size-1) do
 		for j = 0, (board_size-1) do
 			if not revealed[i+1][j+1] and flagged[i+1][j+1] then
@@ -299,6 +330,7 @@ function love.mousereleased(x, y, button, istouch)
 			aoeReveal(i, j)
 		end
 		updateTitle()
+		updatePalette()
 	end
 end
 
